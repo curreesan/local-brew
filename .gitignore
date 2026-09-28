@@ -1,0 +1,25 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+**/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.jks
+*.keystore
+key.properties
+
+# Local scratch files / Artifact drafts, not part of the app
+/scratch_*.html
+/docs/*.html
+
+# Firebase config — not a secret, but keeping it out of the public repo
+/app/google-services.json
