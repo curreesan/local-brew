@@ -20,6 +20,7 @@ key.properties
 # Local scratch files / Artifact drafts, not part of the app
 /scratch_*.html
 /docs/*.html
+/docs/codebase-browser/
 
 # Firebase config — not a secret, but keeping it out of the public repo
 /app/google-services.json

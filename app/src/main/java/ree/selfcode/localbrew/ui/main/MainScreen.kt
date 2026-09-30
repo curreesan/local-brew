@@ -42,8 +42,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,10 +55,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -84,26 +89,41 @@ enum class MainTab {
 @Composable
 fun MainScreen(onCafeClick: (Cafe) -> Unit, onProfileClick: () -> Unit, onLogout: () -> Unit) {
     val context = LocalContext.current
-    var hasRequestedBefore by rememberSaveable { mutableStateOf(false) }
+    var permissionRequestCount by rememberSaveable { mutableStateOf(0) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        hasRequestedBefore = true
+        permissionRequestCount++
     }
 
-    val permissionState = when {
-        ContextCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED -> LocationPermissionState.Granted
+    var resumeTrigger by remember { mutableIntStateOf(0) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-        ActivityCompat.shouldShowRequestPermissionRationale(
-            context as Activity, Manifest.permission.ACCESS_FINE_LOCATION
-        ) -> LocationPermissionState.ShouldShowRationale
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                resumeTrigger++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
-        hasRequestedBefore -> LocationPermissionState.PermanentlyDenied
+    val permissionState = remember(resumeTrigger, permissionRequestCount) {
+        when {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> LocationPermissionState.Granted
 
-        else -> LocationPermissionState.NotRequested
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                context as Activity, Manifest.permission.ACCESS_FINE_LOCATION
+            ) -> LocationPermissionState.ShouldShowRationale
+
+            permissionRequestCount > 0 -> LocationPermissionState.PermanentlyDenied
+
+            else -> LocationPermissionState.NotRequested
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -158,7 +178,12 @@ fun MainScreen(onCafeClick: (Cafe) -> Unit, onProfileClick: () -> Unit, onLogout
             }
         }
         is LocationPermissionState.ShouldShowRationale -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center
+            ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Local Brew needs your location to find nearby cafés.")
                     Button(
@@ -173,7 +198,12 @@ fun MainScreen(onCafeClick: (Cafe) -> Unit, onProfileClick: () -> Unit, onLogout
             }
         }
         is LocationPermissionState.PermanentlyDenied -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center
+            ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Location access was denied. Enable it in Settings to see nearby cafés.")
                     Button(
