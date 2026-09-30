@@ -21,6 +21,7 @@ key.properties
 /scratch_*.html
 /docs/*.html
 /docs/codebase-browser/
+/docs/ultimate-guide-teaching-rules.md
 
 # Firebase config — not a secret, but keeping it out of the public repo
 /app/google-services.json
