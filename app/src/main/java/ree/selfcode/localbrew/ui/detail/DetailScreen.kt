@@ -84,6 +84,7 @@ fun DetailScreen(cafe: Cafe, onBack: () -> Unit) {
         if (!uiState.isLoading) {
             Button(
                 onClick = { viewModel.toggleFavorite(cafe) },
+                enabled = !uiState.isTogglingFavorite,
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {

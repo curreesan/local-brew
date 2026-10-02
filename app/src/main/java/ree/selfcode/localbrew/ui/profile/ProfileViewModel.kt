@@ -27,7 +27,11 @@ class ProfileViewModel(
         private set
 
     fun load() {
-        val uid = authRepository.currentUserId ?: return
+        val uid = authRepository.currentUserId
+        if (uid == null) {
+            uiState = uiState.copy(isLoading = false, errorMessage = "Not logged in")
+            return
+        }
         viewModelScope.launch {
             val profile = firestoreRepository.getProfile(uid)
             uiState = uiState.copy(isLoading = false, username = profile.username, description = profile.description)
@@ -35,7 +39,11 @@ class ProfileViewModel(
     }
 
     fun save(username: String, description: String) {
-        val uid = authRepository.currentUserId ?: return
+        val uid = authRepository.currentUserId
+        if (uid == null) {
+            uiState = uiState.copy(errorMessage = "Not logged in")
+            return
+        }
         viewModelScope.launch {
             try {
                 firestoreRepository.saveProfile(uid, Profile(username, description))

@@ -22,6 +22,7 @@ key.properties
 /docs/*.html
 /docs/codebase-browser/
 /docs/ultimate-guide-teaching-rules.md
+/docs/codebase-qanda-rules.md
 
 # Firebase config — not a secret, but keeping it out of the public repo
 /app/google-services.json

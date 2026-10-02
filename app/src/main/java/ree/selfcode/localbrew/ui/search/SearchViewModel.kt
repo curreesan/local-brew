@@ -10,6 +10,8 @@ import ree.selfcode.localbrew.data.model.Cafe
 import ree.selfcode.localbrew.data.repository.CafeRepository
 import ree.selfcode.localbrew.di.Graph
 
+private const val SEARCH_RADIUS_METERS = 5000
+
 data class SearchUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -27,7 +29,7 @@ class SearchViewModel(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, errorMessage = null)
             try {
-                val result = cafeRepository.getNearbyCafes(lat, lon, radiusMeters = 5000, name = query)
+                val result = cafeRepository.getNearbyCafes(lat, lon, radiusMeters = SEARCH_RADIUS_METERS, name = query)
                 uiState = uiState.copy(isLoading = false, cafes = result.cafes)
             } catch (e: Exception) {
                 uiState = uiState.copy(isLoading = false, errorMessage = e.message ?: "Search failed")

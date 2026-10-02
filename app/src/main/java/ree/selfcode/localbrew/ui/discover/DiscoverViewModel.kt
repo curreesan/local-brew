@@ -10,6 +10,8 @@ import ree.selfcode.localbrew.data.model.Cafe
 import ree.selfcode.localbrew.data.repository.CafeRepository
 import ree.selfcode.localbrew.di.Graph
 
+private const val DEFAULT_RADIUS_METERS = 2000
+
 data class DiscoverUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -28,7 +30,7 @@ class DiscoverViewModel(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, errorMessage = null)
             try {
-                val result = cafeRepository.getNearbyCafes(lat, lon, radiusMeters = 2000)
+                val result = cafeRepository.getNearbyCafes(lat, lon, radiusMeters = DEFAULT_RADIUS_METERS)
                 uiState = uiState.copy(
                     isLoading = false,
                     cafes = result.cafes,
